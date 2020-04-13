@@ -1,4 +1,5 @@
 ''' create a function to name data frames '''
+import numpy as np
 
 namedict = {'Pclass': ['1', '2', '3'], 
             'Sex': ['female', 'male'],
@@ -17,3 +18,7 @@ def col_names(features=[], extra = []):
             namelist.append(feature + '_' + category)
     namelist.extend(extra)
     return namelist
+
+def clean_names_(x):
+    return x.split('__')[-1]
+clean_names = np.vectorize(clean_names_)

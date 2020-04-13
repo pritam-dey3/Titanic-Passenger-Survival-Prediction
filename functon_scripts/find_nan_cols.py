@@ -1,6 +1,7 @@
 def find_nan_cols(data):
-    nancols = []
+    nancols = dict()
     for column in data.columns:
-        if data[column].isnull().any():
-            nancols.append(column)
-    return nancols
+        total_nan = sum(data[column].isnull())
+        if total_nan > 0:
+            nancols[column] = total_nan
+    print(nancols)
