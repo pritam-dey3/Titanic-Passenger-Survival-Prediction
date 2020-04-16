@@ -1,6 +1,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 from xgboost import XGBClassifier, XGBRegressor
 import numpy as np
+import pandas as pd
 
 Pclass_ix = np.s_[:, 0:3]
 Sex_ix = np.s_[:, 3:5]
@@ -57,3 +58,14 @@ class ImputeAge(BaseEstimator, TransformerMixin):
         #replace nan variables
         X[nan_ix, Age_ix[1]] = self.model.predict(X_pred)
         return X
+
+class DiscreteFare(BaseEstimator, TransformerMixin):
+    def __init__(self, bins=[-1, 5, 10, 35, 100, 250, np.inf]):
+        self.bins = bins
+    def fit(self, X=None, y=None):
+        return self
+    def transform(self, X):
+        if not isinstance(X, pd.Series):
+            X = pd.DataFrame(X).iloc[:, 0] 
+        X = pd.cut(X, bins=self.bins, labels=np.arange(len(self.bins[:-1])))
+        return X.to_numpy()
