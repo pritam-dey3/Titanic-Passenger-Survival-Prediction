@@ -1,5 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder
 import numpy as np
 import re
 import pandas as pd
@@ -22,25 +23,33 @@ class CabinImputer(BaseEstimator, TransformerMixin):
     def get_params(self, deep=True):
         return {'imp': self.imp}
 
-class EmbarkedImputer(SimpleImputer):
+class EmbarkedImputer(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        self.imp = SimpleImputer(strategy='most_frequent')
+        self.ohe = OneHotEncoder()
+    def fit(self, X=None, y=None):
+        return self
+    def transform(self, X):
+        X = self.imp.fit_transform(X)
+        return self.ohe.fit_transform(X)
     def get_feature_names(self):
         return np.array(['Embarked'])
+
 
 class DropColumns(BaseEstimator, TransformerMixin):
     def __init__(self, drop_ix=[0, 2, 7], features=[]):
         self.drop_list = drop_ix
         self.features = features
     def fit(self, X=None, y=None):
-        self.drops = self.drop_list
         return self
     def transform(self, X):
         if isinstance(X, pd.DataFrame):
             X = X.to_numpy()
-        return np.delete(X, self.drops, axis=1)
-    def get_feature_names(self):
-        return np.delete(np.array(self.features), self.drop_list, axis=0)
+        return np.delete(X, self.drop_list, axis=1)
     def get_params(self, deep=True):
         return {'drop_ix': self.drop_list, 'features': self.features}
+    def get_feature_names(self, deep=True):
+        return [''] * len(self.drop_list)
 
 class DoNothing(BaseEstimator, TransformerMixin):
     def __init__(self, features=['Age', 'SibSp', 'Parch']):

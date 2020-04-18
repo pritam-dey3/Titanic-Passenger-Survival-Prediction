@@ -20,7 +20,7 @@ class ImputeFare(BaseEstimator, TransformerMixin):
         nan_ix = np.isnan(y.astype(float))
         X = X[~nan_ix]
         y = y[~nan_ix]
-        X = np.c_[X[Pclass_ix], X[Sex_ix], X[Cabin_ix],
+        X = np.c_[X[Pclass_ix], X[Sex_ix],
             X[Embarked_ix], X[SibSp_ix] + X[Parch_ix]]
         self.model = self.model.fit(X,y)
         return self
@@ -59,8 +59,8 @@ class ImputeAge(BaseEstimator, TransformerMixin):
         X[nan_ix, Age_ix[1]] = self.model.predict(X_pred)
         return X
 
-class DiscreteFare(BaseEstimator, TransformerMixin):
-    def __init__(self, bins=[-1, 5, 10, 35, 100, 250, np.inf]):
+class DiscreteVar(BaseEstimator, TransformerMixin):
+    def __init__(self, bins=[-1, 5, 10, 35, 100, 250, np.inf], features=[]):
         self.bins = bins
     def fit(self, X=None, y=None):
         return self
@@ -68,4 +68,5 @@ class DiscreteFare(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.Series):
             X = pd.DataFrame(X).iloc[:, 0] 
         X = pd.cut(X, bins=self.bins, labels=np.arange(len(self.bins[:-1])))
-        return X.to_numpy()
+        # print(np.c_[X.to_numpy()].shape)
+        return np.c_[X.to_numpy()]
