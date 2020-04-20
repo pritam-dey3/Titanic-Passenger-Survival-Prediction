@@ -1,20 +1,21 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from xgboost import XGBClassifier, XGBRegressor
+from xgboost import XGBClassifier
 import numpy as np
 import pandas as pd
+import joblib
 
-Pclass_ix = np.s_[:, 0:3]
+Pclass_ix = np.s_[:, 0]
+SibSp_ix = np.s_[:, 1]
+Parch_ix = np.s_[:, 2]
 Sex_ix = np.s_[:, 3:5]
-Cabin_ix = np.s_[:, 5:14]
-Embarked_ix = np.s_[:, 14:17]
-Age_ix = np.s_[:, 17]
-SibSp_ix = np.s_[:, 18]
-Parch_ix = np.s_[:, 19]
-Fare_ix = np.s_[:, 20]
+Age_ix = np.s_[:, 5]
+Fare_ix = np.s_[:, 6]
+Embarked_ix = np.s_[:, 7:10]
+
 
 class ImputeFare(BaseEstimator, TransformerMixin):
     def __init__(self):
-        self.model = XGBClassifier(max_depth=3, max_leaf_nodes=3, n_estimators=30)
+        self.model = XGBClassifier(max_depth=3, max_leaf_nodes=3, n_estimators=97)
     def fit(self, X=None, y=None):
         y = X[Fare_ix]
         nan_ix = np.isnan(y.astype(float))
@@ -22,13 +23,13 @@ class ImputeFare(BaseEstimator, TransformerMixin):
         y = y[~nan_ix]
         X = np.c_[X[Pclass_ix], X[Sex_ix],
             X[Embarked_ix], X[SibSp_ix] + X[Parch_ix]]
-        self.model = self.model.fit(X,y)
+        self.model = self.model.fit(X, y)
         return self
     def transform(self, X):
         y = X[Fare_ix]
         nan_ix = np.isnan(y.astype(float))
         #select predictor set
-        X_pred = np.c_[X[Pclass_ix], X[Sex_ix], X[Cabin_ix],
+        X_pred = np.c_[X[Pclass_ix], X[Sex_ix],
             X[Embarked_ix], X[SibSp_ix] + X[Parch_ix]]
         X_pred = X_pred[nan_ix]
         #select features
@@ -38,13 +39,14 @@ class ImputeFare(BaseEstimator, TransformerMixin):
 
 class ImputeAge(BaseEstimator, TransformerMixin):
     def __init__(self):
-        self.model = XGBRegressor(max_depth=3, max_leaf_nodes=4, n_estimators=13)
+        self.model = XGBClassifier(eta=0.14, n_estimators=26, reg_lambda=0.9)
+        self.model = joblib.load('filename.pkl')
     def fit(self, X=None, y=None):
         y = X[Age_ix]
         nan_ix = np.isnan(y.astype(float))
         X = X[~nan_ix]
         y = y[~nan_ix]
-        X = np.c_[X[Pclass_ix], X[SibSp_ix], X[Parch_ix], 
+        X = np.c_[X[Pclass_ix], X[Parch_ix], X[SibSp_ix], 
                 X[Sex_ix], X[Fare_ix]]
         self.model = self.model.fit(X, y)
         return self
@@ -52,7 +54,7 @@ class ImputeAge(BaseEstimator, TransformerMixin):
         y = X[Age_ix]
         nan_ix = np.isnan(y.astype(float))
         #select predictor set
-        X_pred = np.c_[X[Pclass_ix], X[SibSp_ix], X[Parch_ix], 
+        X_pred = np.c_[X[Pclass_ix], X[Parch_ix], X[SibSp_ix], 
                 X[Sex_ix], X[Fare_ix]]
         X_pred = X_pred[nan_ix]
         #replace nan variables
