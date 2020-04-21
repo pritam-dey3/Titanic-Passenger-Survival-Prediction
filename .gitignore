@@ -1,4 +1,6 @@
 .git
 .vscode
+.gitignore
 __init__.py
 mydata
+__pycache__
