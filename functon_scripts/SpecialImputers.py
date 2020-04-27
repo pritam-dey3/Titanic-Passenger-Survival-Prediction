@@ -40,7 +40,6 @@ class ImputeFare(BaseEstimator, TransformerMixin):
 class ImputeAge(BaseEstimator, TransformerMixin):
     def __init__(self):
         self.model = XGBClassifier(eta=0.14, n_estimators=26, reg_lambda=0.9)
-        self.model = joblib.load('filename.pkl')
     def fit(self, X=None, y=None):
         y = X[Age_ix]
         nan_ix = np.isnan(y.astype(float))
